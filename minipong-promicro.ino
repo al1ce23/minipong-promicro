@@ -18,8 +18,9 @@ const int cols = 5; //number of columns
 const int button = 3;
 boolean lastButton = LOW;    //Last Button State
 boolean currentButton = LOW; //Current Button State
-int mode = 6;
-int modes = 7; //number of led modes
+int mode = 8;
+int modes = 9; //number of led modes
+int mycol = 0; int mydata = 23;
 int nc = 1; //number column
 int nr = 1; //number row
 int dr = 1; //direction column (move forward or backward
@@ -46,13 +47,18 @@ void loop() {
   currentButton = debounce(lastButton);           //read debounced state
   if (lastButton == LOW && currentButton == HIGH) //if it was pressed...
   {
-    mode++;                                    //increment the LED value
+    mode = mode % modes + 1;
+    //mode++;                                    //increment the LED value
   }
   lastButton = currentButton;
   //if you’ve cycled through the different options, reset the counter to 0
-  if (mode == modes + 1) mode = 1;
-  //  setMode(mode);                              //change the LED state
-
+  //if (mode == modes + 1) mode = 1;
+  //  setMode(mode);//change the LED state
+  if (mode == 9 && millis() % 12 < 1) {
+  mycol = mycol % 7 + 1;
+  xorMode(mycol,mydata);
+  //xorMode(mycol,random(0,(1 << 5) - 1));
+  }
   //when clock reaches wakeup time call random pixle mode
   if (millis() > t2) {
     if (mode == 1) {
@@ -84,11 +90,18 @@ void loop() {
       }
       else {bounce90Mode();}
     }
+    if (mode == 8) {
+      onMode();
+    }
+    if (mode == 9) {
+      mydata = mydata ^ random(0,(1 << 12) - 1);
+      //offMode();//xorMode(random(0,(1 << 5) - 1));
+    }
 
     //read in time
     //calculate time to wakeup
     t2 = millis() + 200;
-    t3 == t3++;
+    t3++;
     Serial.print(nr);
     Serial.print(' ');
     Serial.print(nc);
@@ -270,6 +283,40 @@ int columnScrollMode() {
   setMode(nr, nc);
 }
 
+void xorMode(int col, const unsigned int in)
+{
+  offMode();
+  unsigned int t; unsigned int i = in;
+  for (int c = 7; c > 0; c--) {
+    if (c == col) {
+      t = i;
+      for (int r = 1; r <= 5; r++) {
+        if (t & 1 != 0) {
+          setMode(c,r);
+        }
+        t = t >> 1;
+      }
+    }
+    i = i ^ (i >> 1);
+  }
+}
+
+void onMode()
+{
+  digitalWrite(col1, HIGH);
+  digitalWrite(col2, HIGH);
+  digitalWrite(col3, HIGH);
+  digitalWrite(col4, HIGH);
+  digitalWrite(col5, HIGH);
+  digitalWrite(row1, LOW);
+  digitalWrite(row2, LOW);
+  digitalWrite(row3, LOW);
+  digitalWrite(row4, LOW);
+  digitalWrite(row5, LOW);
+  digitalWrite(row6, LOW);
+  digitalWrite(row7, LOW);
+}
+
 void offMode()
 {
   digitalWrite(col1, LOW);
@@ -337,5 +384,58 @@ int  setMode(int nr, int nc)
   if ( nr == 7)
   {
     digitalWrite(row7, LOW);
+  }
+}
+int  setOffMode(int nr, int nc)
+{
+  if (nc == 1)
+  {
+    digitalWrite(col1, LOW);
+  }
+  if (nc == 2)
+  {
+    digitalWrite(col2, LOW);
+  }
+  if (nc == 3)
+  {
+    digitalWrite(col3, LOW);
+  }
+  if (nc == 4)
+  {
+    digitalWrite(col4, LOW);
+  }
+  if (nc == 5)
+  {
+    digitalWrite(col5, LOW);
+  }
+
+
+  if ( nr == 1)
+  {
+    digitalWrite(row1, HIGH);
+  }
+  if ( nr == 2)
+  {
+    digitalWrite(row2, HIGH);
+  }
+  if ( nr == 3)
+  {
+    digitalWrite(row3, HIGH);
+  }
+  if ( nr == 4)
+  {
+    digitalWrite(row4, HIGH);
+  }
+  if ( nr == 5)
+  {
+    digitalWrite(row5, HIGH);
+  }
+  if ( nr == 6)
+  {
+    digitalWrite(row6, HIGH);
+  }
+  if ( nr == 7)
+  {
+    digitalWrite(row7, HIGH);
   }
 }
